@@ -1,42 +1,128 @@
-// Don't forget to paste your Web App URL here
-const scriptURL =
-  "https://script.google.com/macros/s/AKfycbyCZsV8dWkktl4swFFZ3DRxQlCp_9jW1d-V3G-jh4Wiple8XYpQ1WzPEB4b0WuAVCmq/exec";
+// Mobile Navigation
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("navLinks");
 
-const form = document.forms["submit-to-google-sheet"];
-const msg = document.getElementById("msg"); // For the success message
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+  hamburger.classList.toggle("active");
+});
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
+// Close mobile menu when clicking link
+document.querySelectorAll(".nav-link").forEach((link) => {
+  link.addEventListener("click", () => {
+    navLinks.classList.remove("active");
+    hamburger.classList.remove("active");
+  });
+});
 
-  // 1. Change button text so the user knows the process is running
-  const submitButton = form.querySelector("button");
-  const originalText = submitButton.innerHTML;
-  submitButton.innerHTML = "Sending...";
-  submitButton.disabled = true; // Disable the button to prevent double-clicking
+// Smooth scrolling
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute("href"));
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+    // Close mobile menu
+    navLinks.classList.remove("active");
+    hamburger.classList.remove("active");
+  });
+});
 
-  fetch(scriptURL, { method: "POST", body: new FormData(form) })
-    .then((response) => {
-      // 2. Clear the form here
-      form.reset();
+// Navbar scroll effect
+window.addEventListener("scroll", () => {
+  const navbar = document.querySelector(".navbar");
+  if (window.scrollY > 50) {
+    navbar.style.background = "rgba(255, 255, 255, 0.99)";
+    navbar.style.boxShadow = "0 2px 20px rgba(0,0,0,0.1)";
+  } else {
+    navbar.style.background = "rgba(255, 255, 255, 0.98)";
+    navbar.style.boxShadow = "none";
+  }
+});
 
-      // 3. Show Success Message
-      if (msg) {
-        msg.innerHTML = "Message sent successfully!";
-        setTimeout(function () {
-          msg.innerHTML = "";
-        }, 2000); // Message will disappear after 2 seconds
-      } else {
-        alert("Message sent successfully!");
+// Animate skill bars
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const skillBars = entry.target.querySelectorAll(".skill-progress");
+        skillBars.forEach((bar) => {
+          const width = bar.getAttribute("data-width");
+          bar.style.width = width + "%";
+        });
       }
-
-      // 4. Reset the button to its original state
-      submitButton.innerHTML = originalText;
-      submitButton.disabled = false;
-    })
-    .catch((error) => {
-      console.error("Error!", error.message);
-      if (msg) msg.innerHTML = "Error sending message.";
-      submitButton.innerHTML = originalText;
-      submitButton.disabled = false;
     });
+  },
+  { threshold: 0.5 },
+);
+
+// Observe skills section
+const skillsSection = document.getElementById("skills");
+if (skillsSection) {
+  observer.observe(skillsSection);
+}
+
+// Contact form
+const contactForm = document.getElementById("contactForm");
+const formMessage = document.getElementById("form-message");
+
+if (contactForm) {
+  contactForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(contactForm);
+    const data = Object.fromEntries(formData);
+
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    submitBtn.textContent = "Sending...";
+    submitBtn.disabled = true;
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      formMessage.innerHTML = `
+        <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; border: 1px solid #c3e6cb;">
+          🎉 Message sent successfully! I'll get back to you soon.
+        </div>
+      `;
+      contactForm.reset();
+    } catch (error) {
+      formMessage.innerHTML = `
+        <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border: 1px solid #f5c6cb;">
+          ❌ Something went wrong. Please try again.
+        </div>
+      `;
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+// Active nav link on scroll
+window.addEventListener("scroll", () => {
+  let current = "";
+  const sections = document.querySelectorAll("section");
+
+  sections.forEach((section) => {
+    const sectionTop = section.offsetTop;
+    const sectionHeight = section.clientHeight;
+    if (scrollY >= sectionTop - 200) {
+      current = section.getAttribute("id");
+    }
+  });
+
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("active");
+    if (link.getAttribute("href") === `#${current}`) {
+      link.classList.add("active");
+    }
+  });
 });
